@@ -1,0 +1,16 @@
+function [minAng,face, sortAngles,sortFaces] = minimumAngle( tri, faces )
+facesDef = tri.ConnectivityList(faces,:);   % (#faces x 3)
+facesCoord = tri.Points(facesDef(:),:);     % (#faces*3 x xyz)
+facesCoord = reshape(facesCoord,[],3,3);    % (#faces x 3 x xyz)
+ind = nchoosek(1:3,2);                      % (3 x 2)
+sideLength = facesCoord(:,ind(:,1),:)-facesCoord(:,ind(:,2),:);  % (#faces x 3 x xyz)
+sideLength = sqrt(sum(sideLength.^2,3));    % (#faces x 3)
+[~,r] = tri.circumcenter(faces);            % (#faces x 1)
+sinAngle = bsxfun(@rdivide,sideLength,2*r); % (#faces x 3)
+angle = asin(sinAngle);                     % (#faces x 3)
+minAngles = min(angle,[],2);                % (#faces x 1)
+[minAng,face] = min(minAngles);             % scalars
+[sortAngles,sortFaces] = sort(minAngles);   % (#faces x 1)
+assert(minAng==sortAngles(1))
+assert(face==sortFaces(1))
+end

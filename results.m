@@ -1,7 +1,10 @@
-function [dist, spts, f2,v2,vID, fID] = results
+% calculates surface points, mainly
+
+function [dist, spts, f2,v2,vID, fID] = results(file)
+
 addpath("C:\Users\Jacqueline\Documents\MATLAB\Jacqueline\Breast Demarkation");
 [v,f,n,~] = stlRead('S1.stl');
-pts = inputPts('output.txt');
+pts = inputPts(file); % output or output2
 [m,~] = size(pts);
 [dist, spts, f2, v2, vID, fID] = point2trimesh('Faces', f, 'Vertices', v, 'QueryPoints',pts, 'MaxDistance', 1);
 

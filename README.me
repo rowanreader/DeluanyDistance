@@ -1,0 +1,59 @@
+Okay so this code is very precariously built due to unforseen issues requiring code to be added on but be reliant on old code that changes
+So I'm gonna summarize the order of programs and dependencies for future me (hopefully not anyone else. If anyone else is reading this, I apologize.)
+
+
+main.m runs these:
+	(Zeroth - not because of computer indexing, but because I don't think this one really needs to be explained) inputPts.m
+	Literally just reads in a text file of nx3 coordinates, and puts it into a nx3 array
+
+	First, vectors.m
+	This takes in an array of points, and fits a circle to it.
+	Rotates the circle to be parallel to the xy plane - z is same for all
+	Then, if finds a point every t degrees (set at the top) along that circle
+	Since we're pretending this is at the origin for x y, the direction vector is literally just [x,y] normallized
+	Find dirNum (global variable) points along each direction vector, this gets saved in lines
+	Unrotate lines to get points
+	main then writes these to a file - output.txt
+	(in my defense of the name, I did not know I was going to be writing more than 1 output file at the time)
+
+Second, results.m
+This opens output.txt, and the stl file, and uses a bunch of functions I did not write to calculate the point of the closest distance on the surface made by the stl file.
+spts stores all the points.
+Then I find which face of the stl it belongs to by comparing the vector made by the surface point and a vertex of the face with the normal of the face (should be perpindicular = dot product 0)
+	- never exatly 0, so just the minimum
+We also have to check if the dot is within the triangle of the face due to multiple faces having the same normal
+The distances, surface points and normals are all written to text files
+We actually only care about 'distances.txt' and 'surface points.txt'
+
+Third, circleFit
+When we ran angles and then the VS program Snowman, we found that much of the area under the breast was not found due to the straight lines
+So instead, we decided to try to fit a sphere to the surface points and then get points from that
+This function uses surface points.txt to fit a sphere. It first pulls out the first thresh points of each line (again, relies on global dirNum)
+	- many of the points towards the end of each line were part of the chest wall, and not spherical
+Once again, it fits a circle to the points from the input file (same as vector) and rotates to be parallel to the xy plane
+Finds points on circle every t degrees
+Finds a point along the straight vector every space (distance)
+Calculates the direction vector from the center of the sphere to that point
+Places a point along that direction vector radius of sphere away = point on surface of sphere (along line on surface of sphere originating from fitted circle)
+Assumes z is 0
+Saves in lines
+Rotates lines (something went a little screwy here, had to multiply by -1, don't know why)
+Writes these points to output2.txt
+*While this can be run along to produce output2, if dirNum changes, since circleFit is dependent on surface points, which are dependent on vectors, the entire thing must be re-run
+
+
+3.5, results
+Need to run results with output2.txt to get surface points and normals again
+
+Fourth, angles.m
+This reads normals.txt, and compares neighbours in each set of dirNum points
+Writes to a file angles.txt
+(I swear we're missing some angles. With t = 0, we should have 36 lines, with dirNum = 30, each line had 30 points and 29 angles = 1044 angles. But only 1043 lines are in file. It gets worse as dirNum increases?)
+
+Summary, run.m
+I kept losing track of what I needed to run and in what order, so I made run to just do it all for me.
+Then I figured I might want to write a README file so that if I need to do some more adjustments later I could read this and get a relatively in depth description of what the hell I was doing.
+
+In short: run main->results("output.txt")->results->circleFit->results("output2.txt")->angles
+Then you can run the VS program Snowman.
+Or just run run.m
